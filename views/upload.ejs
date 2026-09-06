@@ -32,6 +32,13 @@
                     </label>
                     <div id="fileName" class="file-name-display">No file selected</div>
                 </div>
+
+                <!-- Folder Path Input -->
+                <div class="folder-input-wrapper">
+                    <label for="folderPath">📂 Upload to folder (optional):</label>
+                    <input type="text" id="folderPath" name="folderPath" placeholder="e.g., health/exercises" class="folder-input">
+                    <small class="folder-hint">Use forward slashes (/) to create subfolders. Leave empty for root folder.</small>
+                </div>
                 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">📤 Upload File</button>
@@ -41,7 +48,7 @@
                 <div class="supported-formats">
                     <small>📄 Supported formats: .xls, .xlsx, .csv</small>
                     <br>
-                    <small>📦 Maximum file size: 50MB</small>
+                    <small>📁 Supports folder organization</small>
                 </div>
             </form>
         </div>
@@ -63,7 +70,6 @@
             }
         });
 
-        // Drag and drop support
         const dropZone = document.querySelector('.file-input-label');
         
         dropZone.addEventListener('dragover', (e) => {
