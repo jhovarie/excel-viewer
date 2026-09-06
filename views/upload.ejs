@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload File - Excel Viewer</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="upload-container">
+        <div class="upload-card">
+            <div class="upload-header">
+                <h1>📤 Upload Excel/CSV File</h1>
+                <a href="/" class="close-btn">✕</a>
+            </div>
+            
+            <% if (message) { %>
+                <div class="alert success">✅ <%= message %></div>
+            <% } %>
+            
+            <% if (error) { %>
+                <div class="alert error">❌ <%= error %></div>
+            <% } %>
+
+            <form action="/upload" method="POST" enctype="multipart/form-data">
+                <div class="file-input-wrapper">
+                    <input type="file" name="file" id="fileInput" accept=".xls,.xlsx,.csv" required>
+                    <label for="fileInput" class="file-input-label">
+                        <div class="file-input-icon">📁</div>
+                        <span>Click to select a file</span>
+                        <span class="file-input-sub">or drag and drop</span>
+                    </label>
+                    <div id="fileName" class="file-name-display">No file selected</div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">📤 Upload File</button>
+                    <a href="/" class="btn btn-secondary">← Back to Home</a>
+                </div>
+                
+                <div class="supported-formats">
+                    <small>📄 Supported formats: .xls, .xlsx, .csv</small>
+                    <br>
+                    <small>📦 Maximum file size: 50MB</small>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileNameDisplay = document.getElementById('fileName');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const fileSize = (file.size / 1024).toFixed(2) + ' KB';
+                fileNameDisplay.textContent = `${file.name} (${fileSize})`;
+                fileNameDisplay.style.color = '#28a745';
+            } else {
+                fileNameDisplay.textContent = 'No file selected';
+                fileNameDisplay.style.color = '#6c757d';
+            }
+        });
+
+        // Drag and drop support
+        const dropZone = document.querySelector('.file-input-label');
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#3498db';
+            dropZone.style.background = '#e8f4f8';
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#dee2e6';
+            dropZone.style.background = '#f8f9fa';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#dee2e6';
+            dropZone.style.background = '#f8f9fa';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                const event = new Event('change');
+                fileInput.dispatchEvent(event);
+            }
+        });
+    </script>
+</body>
+</html>

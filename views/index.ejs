@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Viewer</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Side Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>📊 Files</h2>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search files..." onkeyup="filterFiles()">
+                </div>
+            </div>
+            <ul class="file-list" id="fileList">
+                <% if (files && files.length > 0) { %>
+                    <% files.forEach(file => { %>
+                        <li class="file-item <%= selectedFile === file.name ? 'active' : '' %>">
+                            <a href="/file/<%= file.name %>">
+                                <span class="file-icon">
+                                    <% if (file.extension === '.csv') { %>
+                                        📄
+                                    <% } else if (file.extension === '.xlsx') { %>
+                                        📊
+                                    <% } else { %>
+                                        📈
+                                    <% } %>
+                                </span>
+                                <span class="file-name"><%= file.name %></span>
+                                <span class="file-size"><%= file.size %></span>
+                            </a>
+                        </li>
+                    <% }); %>
+                <% } else { %>
+                    <li class="no-files">📭 No files uploaded yet</li>
+                <% } %>
+            </ul>
+            <div class="sidebar-footer">
+                <a href="/upload" class="upload-btn">📤 Upload New File</a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-header">
+                <h1>
+                    <% if (selectedFile) { %>
+                        📄 <%= selectedFile %>
+                    <% } else { %>
+                        📊 Excel Viewer
+                    <% } %>
+                </h1>
+                <div class="header-actions">
+                    <% if (selectedFile) { %>
+                        <!-- Font Size Dropdown -->
+                        <div class="font-size-control">
+                            <label for="fontSizeSelect">🔤 Size:</label>
+                            <select id="fontSizeSelect" onchange="changeFontSize(this.value)">
+                                <option value="12">12px</option>
+                                <option value="14">14px</option>
+                                <option value="16" selected>16px</option>
+                                <option value="18">18px</option>
+                                <option value="20">20px</option>
+                                <option value="24">24px</option>
+                                <option value="28">28px</option>
+                                <option value="32">32px</option>
+                            </select>
+                        </div>
+
+                        <!-- Answer Toggle Checkbox -->
+                        <div class="toggle-container">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggleAnswers" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-label">Show Answers</span>
+                        </div>
+                        <button onclick="reshuffleData()" class="reshuffle-btn" id="reshuffleBtn">
+                            🔀 Shuffle
+                        </button>
+                        <a href="/" class="back-btn">← Back</a>
+                    <% } %>
+                </div>
+            </div>
+
+            <% if (shuffled && selectedFile && data) { %>
+                <div class="alert info">🔄 Rows have been shuffled! (Header preserved)</div>
+            <% } %>
+
+            <% if (error) { %>
+                <div class="alert error"><%= error %></div>
+            <% } %>
+
+            <% if (selectedFile && data) { %>
+                <div class="table-container">
+                    <div class="table-info">
+                        <span>📊 Showing <strong><%= data.length - 1 %></strong> entries</span>
+                        <span class="table-stats">📋 <strong><%= Object.keys(data[0] || {}).length %></strong> columns</span>
+                        <span class="table-stats" id="answerStatus">💡 Answers: Visible</span>
+                    </div>
+                    <div class="table-wrapper" id="tableWrapper">
+                        <table id="dataTable">
+                            <thead>
+                                <tr>
+                                    <% if (data.length > 0) { %>
+                                        <% Object.keys(data[0]).forEach((key, index) => { %>
+                                            <th class="<%= index === 1 ? 'answer-column' : '' %>">
+                                                <%= key %>
+                                            </th>
+                                        <% }); %>
+                                    <% } %>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <% data.forEach((row, rowIndex) => { %>
+                                    <% if (rowIndex === 0) return; // Skip header row %>
+                                    <tr>
+                                        <% 
+                                        // Get all values from the row
+                                        const values = Object.values(row);
+                                        // Helper function to safely convert value to string
+                                        function safeString(val) {
+                                            if (val === null || val === undefined) return '';
+                                            if (typeof val === 'string') return val;
+                                            if (typeof val === 'number') return String(val);
+                                            if (typeof val === 'boolean') return String(val);
+                                            if (val instanceof Date) return val.toLocaleString();
+                                            return String(val);
+                                        }
+                                        %>
+                                        <% values.forEach((value, colIndex) => { %>
+                                            <td 
+                                                class="<%= colIndex === 1 ? 'answer-column' : '' %> 
+                                                       <%= colIndex === 0 ? 'question-cell' : '' %>"
+                                                data-answer="<%= colIndex === 1 ? safeString(value).replace(/"/g, '&quot;') : '' %>"
+                                                data-question="<%= colIndex === 0 ? safeString(value).replace(/"/g, '&quot;') : '' %>"
+                                            >
+                                                <%= safeString(value) || '-' %>
+                                            </td>
+                                        <% }); %>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <% } else if (!selectedFile) { %>
+                <div class="welcome">
+                    <h2>👋 Welcome to Excel Viewer</h2>
+                    <p>Select a file from the sidebar or upload a new one</p>
+                    <a href="/upload" class="upload-btn-large">📤 Upload Excel/CSV File</a>
+                    <div class="supported-formats">
+                        <small>Supported formats: .xls, .xlsx, .csv</small>
+                        <br>
+                        <small>🔄 Rows are automatically shuffled on load (header preserved)</small>
+                        <br>
+                        <small>💡 Toggle answers on/off with the switch above</small>
+                    </div>
+                </div>
+            <% } %>
+        </main>
+    </div>
+
+    <script>
+        // ============ FONT SIZE CONTROL ============
+        function changeFontSize(size) {
+            const tableWrapper = document.getElementById('tableWrapper');
+            if (tableWrapper) {
+                const table = tableWrapper.querySelector('table');
+                if (table) {
+                    table.style.fontSize = size + 'px';
+                    const allCells = table.querySelectorAll('th, td');
+                    allCells.forEach(cell => {
+                        cell.style.fontSize = size + 'px';
+                    });
+                }
+            }
+            localStorage.setItem('excelViewerFontSize', size);
+        }
+
+        function loadFontSize() {
+            const savedSize = localStorage.getItem('excelViewerFontSize');
+            if (savedSize) {
+                const select = document.getElementById('fontSizeSelect');
+                if (select) {
+                    select.value = savedSize;
+                }
+                changeFontSize(savedSize);
+            } else {
+                const select = document.getElementById('fontSizeSelect');
+                if (select) {
+                    select.value = '16';
+                }
+                changeFontSize('16');
+            }
+        }
+
+        // ============ SEARCH FUNCTIONALITY ============
+        function filterFiles() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const fileItems = document.querySelectorAll('.file-item');
+            
+            fileItems.forEach(item => {
+                const fileName = item.querySelector('.file-name').textContent.toLowerCase();
+                if (fileName.includes(filter)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // ============ TOOLTIP FUNCTIONALITY ============
+        const tooltip = document.createElement('div');
+        tooltip.className = 'custom-tooltip';
+        tooltip.style.display = 'none';
+        document.body.appendChild(tooltip);
+
+        function positionTooltip(e) {
+            const x = e.clientX + 15;
+            const y = e.clientY + 15;
+            
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const tooltipRect = tooltip.getBoundingClientRect();
+            
+            let left = x;
+            let top = y;
+            
+            if (x + tooltipRect.width > viewportWidth) {
+                left = e.clientX - tooltipRect.width - 15;
+            }
+            
+            if (y + tooltipRect.height > viewportHeight) {
+                top = e.clientY - tooltipRect.height - 15;
+            }
+            
+            tooltip.style.left = Math.max(10, left) + 'px';
+            tooltip.style.top = Math.max(10, top) + 'px';
+        }
+
+        function attachTooltipEvents() {
+            const questionCells = document.querySelectorAll('.question-cell');
+            
+            questionCells.forEach(cell => {
+                cell.removeEventListener('mouseenter', handleMouseEnter);
+                cell.removeEventListener('mousemove', handleMouseMove);
+                cell.removeEventListener('mouseleave', handleMouseLeave);
+                
+                cell.addEventListener('mouseenter', handleMouseEnter);
+                cell.addEventListener('mousemove', handleMouseMove);
+                cell.addEventListener('mouseleave', handleMouseLeave);
+            });
+        }
+
+        function handleMouseEnter(e) {
+            const answer = this.getAttribute('data-answer');
+            const question = this.getAttribute('data-question');
+            const toggleCheckbox = document.getElementById('toggleAnswers');
+            const isAnswersHidden = !toggleCheckbox || !toggleCheckbox.checked;
+            
+            if (isAnswersHidden && answer && answer.trim() !== '' && answer.trim() !== '-') {
+                tooltip.innerHTML = `
+                    <div class="tooltip-content">
+                        <div class="tooltip-question">❓ ${question || 'Question'}</div>
+                        <div class="tooltip-answer">💡 ${answer}</div>
+                    </div>
+                `;
+                tooltip.style.display = 'block';
+                positionTooltip(e);
+            }
+        }
+
+        function handleMouseMove(e) {
+            if (tooltip.style.display === 'block') {
+                positionTooltip(e);
+            }
+        }
+
+        function handleMouseLeave() {
+            tooltip.style.display = 'none';
+        }
+
+        // ============ ANSWER TOGGLE FUNCTIONALITY ============
+        function initializeToggle() {
+            const toggleCheckbox = document.getElementById('toggleAnswers');
+            if (!toggleCheckbox) return;
+
+            toggleCheckbox.addEventListener('change', function() {
+                const answerColumns = document.querySelectorAll('.answer-column');
+                const answerStatus = document.getElementById('answerStatus');
+                
+                if (this.checked) {
+                    answerColumns.forEach(col => {
+                        col.style.display = '';
+                    });
+                    if (answerStatus) {
+                        answerStatus.textContent = '💡 Answers: Visible';
+                        answerStatus.style.color = '#28a745';
+                    }
+                    tooltip.style.display = 'none';
+                } else {
+                    answerColumns.forEach(col => {
+                        col.style.display = 'none';
+                    });
+                    if (answerStatus) {
+                        answerStatus.textContent = '💡 Answers: Hidden (hover questions to see)';
+                        answerStatus.style.color = '#dc3545';
+                    }
+                }
+            });
+        }
+
+        // ============ RESHUFFLE FUNCTIONALITY ============
+        async function reshuffleData() {
+            const btn = document.getElementById('reshuffleBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ Shuffling...';
+            btn.disabled = true;
+
+            try {
+                const filename = '<%= selectedFile %>';
+                const response = await fetch(`/reshuffle/${filename}`);
+                const result = await response.json();
+                
+                if (result.error) {
+                    alert('Error: ' + result.error);
+                    return;
+                }
+
+                updateTable(result.data);
+                showNotification('🔄 Rows reshuffled successfully!');
+                
+            } catch (error) {
+                alert('Error reshuffling: ' + error.message);
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function updateTable(data) {
+            if (!data || data.length === 0) return;
+
+            const tableWrapper = document.querySelector('.table-wrapper');
+            if (!tableWrapper) return;
+
+            const table = document.getElementById('dataTable');
+            if (!table) return;
+            
+            const tbody = document.getElementById('tableBody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+
+            const thead = table.querySelector('thead');
+            const headerRow = thead.querySelector('tr');
+            headerRow.innerHTML = '';
+            
+            // Add column headers (without # and without badge)
+            if (data.length > 0) {
+                Object.keys(data[0]).forEach((key, index) => {
+                    const th = document.createElement('th');
+                    th.className = index === 1 ? 'answer-column' : '';
+                    th.textContent = key;
+                    headerRow.appendChild(th);
+                });
+            }
+
+            function safeString(val) {
+                if (val === null || val === undefined) return '';
+                if (typeof val === 'string') return val;
+                if (typeof val === 'number') return String(val);
+                if (typeof val === 'boolean') return String(val);
+                if (val instanceof Date) return val.toLocaleString();
+                return String(val);
+            }
+
+            // Add data rows (skip header row - index 0)
+            data.forEach((row, rowIndex) => {
+                if (rowIndex === 0) return; // Skip header row
+                
+                const tr = document.createElement('tr');
+                const values = Object.values(row);
+                
+                values.forEach((value, colIndex) => {
+                    const td = document.createElement('td');
+                    const safeValue = safeString(value);
+                    
+                    if (colIndex === 1) {
+                        td.className = 'answer-column';
+                    }
+                    
+                    if (colIndex === 0) {
+                        td.className += ' question-cell';
+                        td.setAttribute('data-answer', safeString(values[1] || ''));
+                        td.setAttribute('data-question', safeValue);
+                    }
+                    
+                    td.textContent = safeValue || '-';
+                    tr.appendChild(td);
+                });
+                
+                tbody.appendChild(tr);
+            });
+
+            // Re-apply font size
+            const savedSize = localStorage.getItem('excelViewerFontSize') || '16';
+            changeFontSize(savedSize);
+
+            // Update row count
+            const tableInfo = document.querySelector('.table-info');
+            if (tableInfo) {
+                const rowCount = data.length - 1; // Exclude header
+                const answerStatus = document.getElementById('answerStatus');
+                tableInfo.innerHTML = `
+                    <span>📊 Showing <strong>${rowCount}</strong> entries</span>
+                    <span class="table-stats">📋 <strong>${Object.keys(data[0] || {}).length}</strong> columns</span>
+                    ${answerStatus ? answerStatus.outerHTML : ''}
+                `;
+            }
+
+            setTimeout(() => {
+                attachTooltipEvents();
+                
+                const toggleCheckbox = document.getElementById('toggleAnswers');
+                if (toggleCheckbox && !toggleCheckbox.checked) {
+                    document.querySelectorAll('.answer-column').forEach(col => {
+                        col.style.display = 'none';
+                    });
+                }
+            }, 100);
+        }
+
+        function showNotification(message) {
+            const existing = document.querySelector('.alert.info');
+            if (existing) existing.remove();
+
+            const div = document.createElement('div');
+            div.className = 'alert info';
+            div.textContent = message;
+            
+            const header = document.querySelector('.content-header');
+            header.parentNode.insertBefore(div, header.nextSibling);
+
+            setTimeout(() => {
+                div.style.opacity = '0';
+                div.style.transition = 'opacity 0.5s';
+                setTimeout(() => div.remove(), 500);
+            }, 5000);
+        }
+
+        // ============ INITIALIZATION ============
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFontSize();
+            initializeToggle();
+            attachTooltipEvents();
+            
+            const toggleCheckbox = document.getElementById('toggleAnswers');
+            const answerStatus = document.getElementById('answerStatus');
+            if (toggleCheckbox && toggleCheckbox.checked && answerStatus) {
+                answerStatus.textContent = '💡 Answers: Visible';
+                answerStatus.style.color = '#28a745';
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                e.preventDefault();
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) searchInput.focus();
+            }
+            
+            if (e.key === 'a' || e.key === 'A') {
+                const toggle = document.getElementById('toggleAnswers');
+                if (toggle && !e.ctrlKey && !e.metaKey) {
+                    toggle.checked = !toggle.checked;
+                    toggle.dispatchEvent(new Event('change'));
+                }
+            }
+            
+            if (e.key === '+' || e.key === '=') {
+                if (!e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    const select = document.getElementById('fontSizeSelect');
+                    if (select) {
+                        const currentIndex = select.selectedIndex;
+                        if (currentIndex < select.options.length - 1) {
+                            select.selectedIndex = currentIndex + 1;
+                            changeFontSize(select.value);
+                        }
+                    }
+                }
+            }
+            
+            if (e.key === '-') {
+                if (!e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    const select = document.getElementById('fontSizeSelect');
+                    if (select) {
+                        const currentIndex = select.selectedIndex;
+                        if (currentIndex > 0) {
+                            select.selectedIndex = currentIndex - 1;
+                            changeFontSize(select.value);
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
