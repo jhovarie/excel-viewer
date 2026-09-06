@@ -137,8 +137,33 @@ function readExcel(filePath) {
     try {
         const workbook = xlsx.readFile(filePath);
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const data = xlsx.utils.sheet_to_json(firstSheet, { header: 1 });
-        return shuffleRows(data);
+        
+        // Read as array of arrays
+        const rawData = xlsx.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+        
+        if (!rawData || rawData.length === 0) {
+            return [];
+        }
+        
+        // Get headers from first row
+        const headers = rawData[0];
+        // Get data rows (skip header)
+        const rows = rawData.slice(1);
+        
+        // Convert to object format like CSV
+        const result = rows.map(row => {
+            const obj = {};
+            headers.forEach((header, index) => {
+                obj[header] = row[index] || '';
+            });
+            return obj;
+        });
+        
+        // Shuffle the rows
+        const shuffledResult = shuffleArray(result);
+        
+        // Return with headers as first row in object format
+        return shuffledResult;
     } catch (error) {
         console.error('Error reading Excel file:', error);
         throw error;
@@ -225,6 +250,7 @@ app.get('/file', async (req, res) => {
             } else {
                 error = 'Unsupported file format';
             }
+            console.log('File data sample:', data.slice(0, 3));
         } catch (readError) {
             error = 'Error reading file: ' + readError.message;
             console.error(readError);
@@ -242,6 +268,7 @@ app.get('/file', async (req, res) => {
         console.error(error);
         res.status(500).send('Error reading file');
     }
+    
 });
 
 app.get('/reshuffle', async (req, res) => {
