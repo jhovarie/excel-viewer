@@ -11,13 +11,14 @@
 <body>
     <div class="container">
         <!-- Side Navigation -->
-        <nav class="sidebar">
-            <div class="sidebar-header">
-                <h2>📊 Files</h2>
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="Search files..." onkeyup="filterFiles()">
-                </div>
-            </div>
+        <nav class="sidebar" id="sidebar">
+       <button class=""sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar"><span class="toggle-arrow">◀</span></button>
+    <div class="sidebar-header">
+        <h2>📊 Files</h2>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search files..." onkeyup="filterFiles()">
+        </div>
+    </div>
             <ul class="file-list" id="fileList">
                 <% if (structure && structure.length> 0) { %>
                     <% function renderTree(items) { let html='' ; for (const item of items) { if (item.type==='folder' )
@@ -42,7 +43,7 @@
                                 <% } %>
             </ul>
             <div class="sidebar-footer">
-                <a href="/upload" class="upload-btn">📤 Upload New File</a>
+                <a href="/upload" class="upload-btn">📤 <span>Upload New File</span></a>
             </div>
         </nav>
 
@@ -165,6 +166,24 @@
     </div>
 
     <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            if(!sidebar) return;
+            sidebar.classList.toggle('collapsed');
+            //Save state to localStorage 
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebarCollapsed', isCollapsed ? 'true': 'false' );
+        }
+        
+        function loadSidebarState() {
+            const sidebar = document.getElementById('sidebar');
+            if(!sidebar) return;
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if(isCollapsed) {
+                sidebar.classList.add('collapsed');
+            }
+        }
+
         // ============ FONT SIZE CONTROL ============
         function changeFontSize(size) {
             const tableWrapper = document.getElementById('tableWrapper');
@@ -491,6 +510,7 @@
 
         // ============ INITIALIZATION ============
         document.addEventListener('DOMContentLoaded', function () {
+            loadSidebarState();
             loadFontSize();
             initializeToggle();
             attachTooltipEvents();

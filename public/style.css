@@ -25,6 +25,8 @@ body {
     display: flex;
     flex-direction: column;
     box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    transition: width 0.3s ease, min-width 0.3s ease;
+    position: relative;
 }
 
 .sidebar-header {
@@ -168,6 +170,7 @@ body {
 
 .header-actions {
     display: flex;
+    align-items: center;
     gap: 10px;
 }
 
@@ -192,6 +195,7 @@ body {
     border-radius: 8px;
     margin-bottom: 20px;
     font-weight: 500;
+    animation: slideDown 0.3s ease;
 }
 
 .alert.success {
@@ -204,6 +208,23 @@ body {
     background: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
+}
+
+.alert.info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 /* Table */
@@ -499,33 +520,6 @@ tbody tr:hover {
     background: #555;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .container {
-        flex-direction: column;
-    }
-    
-    .sidebar {
-        width: 100%;
-        min-width: 100%;
-        max-height: 300px;
-    }
-    
-    .content {
-        padding: 15px;
-    }
-    
-    .table-wrapper {
-        max-height: 50vh;
-    }
-    
-    .upload-card {
-        padding: 25px;
-    }
-}
-
-/* Add to your existing style.css */
-
 /* Reshuffle Button */
 .reshuffle-btn {
     padding: 8px 20px;
@@ -549,39 +543,6 @@ tbody tr:hover {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
-}
-
-/* Info Alert */
-.alert.info {
-    background: #d1ecf1;
-    color: #0c5460;
-    border: 1px solid #bee5eb;
-}
-
-.alert {
-    padding: 15px 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    font-weight: 500;
-    animation: slideDown 0.3s ease;
-}
-
-@keyframes slideDown {
-    from {
-        transform: translateY(-10px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-/* Header actions - ensure proper alignment */
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
 }
 
 /* ============ TOGGLE SWITCH ============ */
@@ -645,6 +606,43 @@ tbody tr:hover {
     font-weight: 500;
     color: #2c3e50;
     user-select: none;
+}
+
+/* ============ FONT SIZE CONTROL ============ */
+.font-size-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8f9fa;
+    padding: 5px 12px;
+    border-radius: 30px;
+    border: 1px solid #dee2e6;
+}
+
+.font-size-control label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.font-size-control select {
+    padding: 4px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background: white;
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.font-size-control select:hover {
+    border-color: #3498db;
+}
+
+.font-size-control select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 /* ============ COLUMN BADGE ============ */
@@ -727,43 +725,6 @@ tbody tr:hover {
     display: none;
 }
 
-/* ============ RESPONSIVE ADJUSTMENTS ============ */
-@media (max-width: 768px) {
-    .toggle-container {
-        padding: 5px 10px;
-    }
-    
-    .toggle-label {
-        font-size: 12px;
-    }
-    
-    .toggle-switch {
-        width: 40px;
-        height: 22px;
-    }
-    
-    .toggle-slider:before {
-        height: 14px;
-        width: 14px;
-        left: 4px;
-        bottom: 4px;
-    }
-    
-    .toggle-switch input:checked + .toggle-slider:before {
-        transform: translateX(18px);
-    }
-    
-    .custom-tooltip {
-        max-width: 250px;
-        padding: 10px 12px;
-    }
-    
-    .tooltip-question,
-    .tooltip-answer {
-        font-size: 12px;
-    }
-}
-
 /* ============ FOLDER STYLES ============ */
 .folder-item {
     border-bottom: 1px solid #34495e;
@@ -842,7 +803,6 @@ tbody tr:hover {
     padding-left: 70px;
 }
 
-/* Nested folder levels */
 .folder-children .folder-children .folder-children .file-item a {
     padding-left: 95px;
 }
@@ -851,28 +811,12 @@ tbody tr:hover {
     padding-left: 99px;
 }
 
-/* Search highlight */
 .file-item.hidden {
     display: none !important;
 }
 
 .folder-item.hidden {
     display: none !important;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .folder-header {
-        padding: 8px 15px;
-    }
-    
-    .folder-children .file-item a {
-        padding-left: 30px;
-    }
-    
-    .folder-children .folder-children .file-item a {
-        padding-left: 50px;
-    }
 }
 
 /* ============ UPLOAD FOLDER INPUT ============ */
@@ -912,4 +856,294 @@ tbody tr:hover {
     margin-top: 4px;
     font-size: 12px;
     color: #95a5a6;
+}
+
+/* ============ COLLAPSIBLE SIDEBAR (DESKTOP) ============ */
+.sidebar.collapsed {
+    width: 60px;
+    min-width: 60px;
+}
+
+.sidebar.collapsed .sidebar-header h2,
+.sidebar.collapsed .search-box,
+.sidebar.collapsed .file-name,
+.sidebar.collapsed .file-size,
+.sidebar.collapsed .folder-name,
+.sidebar.collapsed .folder-count,
+.sidebar.collapsed .upload-btn span {
+    display: none;
+}
+
+.sidebar.collapsed .upload-btn {
+    padding: 12px 0;
+    text-align: center;
+    font-size: 20px;
+}
+
+/* Sidebar toggle button */
+.sidebar-toggle {
+    position: absolute;
+    top: 15px;
+    right: -15px;
+    width: 30px;
+    height: 30px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    z-index: 100;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.sidebar-toggle:hover {
+    background: #2980b9;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
+/* Toggle arrow - rotates independently of button */
+.sidebar-toggle .toggle-arrow {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    font-size: 12px;
+    line-height: 1;
+}
+
+/* Desktop: arrow rotates 180deg when collapsed (left → right) */
+.sidebar.collapsed .sidebar-toggle .toggle-arrow {
+    transform: rotate(180deg);
+}
+
+/* Adjust sidebar elements when collapsed (desktop) */
+.sidebar.collapsed .sidebar-header {
+    padding: 20px 10px;
+}
+
+.sidebar.collapsed .file-item a {
+    padding: 12px 15px;
+    justify-content: center;
+}
+
+.sidebar.collapsed .file-item a:hover {
+    padding-left: 15px;
+}
+
+.sidebar.collapsed .file-icon {
+    margin-right: 0;
+    font-size: 20px;
+}
+
+.sidebar.collapsed .folder-header {
+    padding: 10px 15px;
+    justify-content: center;
+}
+
+.sidebar.collapsed .folder-toggle {
+    font-size: 20px;
+}
+
+.sidebar.collapsed .folder-children {
+    display: none !important;
+}
+
+.sidebar.collapsed .sidebar-footer {
+    padding: 15px 10px;
+}
+
+/* ============ MOBILE VIEW (Vertical Collapse) ============ */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+    
+    .sidebar {
+        width: 100%;
+        min-width: 100%;
+        max-height: 50vh;
+        overflow-y: auto;
+        transition: max-height 0.35s ease;
+        position: relative;
+        flex-shrink: 0;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    
+    /* Collapsed mobile state */
+    .sidebar.collapsed {
+        width: 100%;
+        min-width: 100%;
+        max-height: 60px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .sidebar.collapsed .sidebar-header {
+        padding: 15px 20px;
+        border-bottom: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .sidebar.collapsed .sidebar-header h2 {
+        display: block !important;
+        margin: 0;
+        font-size: 16px;
+    }
+    
+    .sidebar.collapsed .search-box,
+    .sidebar.collapsed .file-list,
+    .sidebar.collapsed .sidebar-footer {
+        display: none !important;
+    }
+    
+    /* Toggle button - top right on mobile */
+    .sidebar-toggle {
+        position: absolute;
+        top: 13px;
+        right: 15px;
+        width: 34px;
+        height: 34px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        z-index: 100;
+        transition: background 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .sidebar-toggle:hover {
+        background: #2980b9;
+    }
+    
+    /* Mobile: arrow points DOWN when expanded (collapse action) */
+    .sidebar-toggle .toggle-arrow {
+        transform: rotate(90deg);
+        display: inline-block;
+        transition: transform 0.3s ease;
+        font-size: 12px;
+        line-height: 1;
+    }
+    
+    /* Mobile: arrow points UP when collapsed (expand action) */
+    .sidebar.collapsed .sidebar-toggle .toggle-arrow {
+        transform: rotate(-90deg);
+    }
+    
+    /* Expanded mobile - restore normal layout */
+    .sidebar:not(.collapsed) .file-item a,
+    .sidebar:not(.collapsed) .folder-header {
+        justify-content: flex-start;
+    }
+    
+    .sidebar:not(.collapsed) .file-icon {
+        margin-right: 10px;
+    }
+    
+    .sidebar:not(.collapsed) .file-name,
+    .sidebar:not(.collapsed) .file-size,
+    .sidebar:not(.collapsed) .folder-name,
+    .sidebar:not(.collapsed) .folder-count,
+    .sidebar:not(.collapsed) .sidebar-header h2,
+    .sidebar:not(.collapsed) .search-box,
+    .sidebar:not(.collapsed) .upload-btn span {
+        display: block;
+    }
+    
+    /* Content area */
+    .content {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+        min-height: 0;
+    }
+    
+    .table-wrapper {
+        max-height: 60vh;
+    }
+    
+    .upload-card {
+        padding: 25px;
+    }
+    
+    .content-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .content-header h1 {
+        font-size: 18px;
+    }
+    
+    .header-actions {
+        flex-wrap: wrap;
+        gap: 6px;
+        width: 100%;
+    }
+    
+    .font-size-control label {
+        display: none;
+    }
+    
+    /* Toggle switch mobile */
+    .toggle-container {
+        padding: 5px 10px;
+    }
+    
+    .toggle-label {
+        font-size: 12px;
+    }
+    
+    .toggle-switch {
+        width: 40px;
+        height: 22px;
+    }
+    
+    .toggle-slider:before {
+        height: 14px;
+        width: 14px;
+        left: 4px;
+        bottom: 4px;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider:before {
+        transform: translateX(18px);
+    }
+    
+    /* Tooltip mobile */
+    .custom-tooltip {
+        max-width: 250px;
+        padding: 10px 12px;
+    }
+    
+    .tooltip-question,
+    .tooltip-answer {
+        font-size: 12px;
+    }
+    
+    /* Folder mobile */
+    .folder-header {
+        padding: 8px 15px;
+    }
+    
+    .folder-children .file-item a {
+        padding-left: 30px;
+    }
+    
+    .folder-children .folder-children .file-item a {
+        padding-left: 50px;
+    }
 }
